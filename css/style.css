@@ -693,14 +693,37 @@ img {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
+        padding: 5px;
     }
     
     .product-card {
         margin: 0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+    }
+    
+    .product-card:active {
+        transform: scale(0.98);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     .product-image {
-        height: 120px;
+        height: 140px;
+        background-size: cover;
+        background-position: center;
+    }
+    
+    .product-details {
+        padding: 10px 5px;
+    }
+    
+    .product-name {
+        font-size: 0.85rem;
+        margin-bottom: 3px;
+    }
+    
+    .product-price {
+        font-size: 0.9rem;
     }
 }
 
