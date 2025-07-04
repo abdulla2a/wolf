@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بو اكسسواراتا | Wolf Jewelry</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="./css/telegram-style.css">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -58,8 +58,13 @@
                         <li><a href="#about">ئه م كينه</a></li>
                         <li><a href="#contact">په يوه نديى بمه بكه</a></li>
                     </ul>
-                
+                    <div class="cart-icon-container">
+                        <a href="cart.html" class="cart-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">0</span>
+                        </a>
                     </div>
+                </div>
                 </div>
             </div>
         </nav>
@@ -165,10 +170,53 @@
     
     <!-- Telegram Chat Widget will be added automatically by telegram-bot.js -->
 
+    <!-- زر السلة العائم للجوال -->
+    <a href="cart.html" class="floating-cart-btn" id="floatingCartBtn">
+        <i class="fas fa-shopping-cart">
+            <span class="floating-cart-count">0</span>
+        </i>
+    </a>
+
     <!-- JavaScript Files -->
     <script src="js/mobile-menu.js"></script>
     <script src="js/products.js"></script>
-    <script src="js/telegram-bot.js" defer></script>
+    <script>
+        // تحديث عداد السلة العائم
+        function updateFloatingCartCount() {
+            try {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const count = cart.reduce((total, item) => total + (item.quantity || 0), 0);
+                const floatingCount = document.querySelector('.floating-cart-count');
+                if (floatingCount) {
+                    floatingCount.textContent = count;
+                    floatingCount.style.display = count > 0 ? 'flex' : 'none';
+                }
+                
+                // تحديث عداد شريط التنقل
+                document.querySelectorAll('.cart-count').forEach(element => {
+                    element.textContent = count;
+                });
+            } catch (error) {
+                console.error('خطأ في تحديث عداد السلة:', error);
+            }
+        }
+
+        // تحديث العداد عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFloatingCartCount();
+            
+            // تحديث العداد عند تلقي حدث التحديث
+            window.addEventListener('cartUpdated', updateFloatingCartCount);
+            
+            // تحديث العداد عند تغيير التخزين المحلي
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'cart') {
+                    updateFloatingCartCount();
+                }
+            });
+        });
+    </script>
+
 
 </body>
 </html>

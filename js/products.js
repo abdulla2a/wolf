@@ -83,6 +83,68 @@ const products = [
     }
 ];
 
+// دالة إضافة منتج إلى السلة
+function addToCart(productId, event) {
+    // منع انتشار الحدث لمنع تكبير الصورة
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    const product = products.find(p => p.id == productId);
+    if (!product) return false;
+    
+    // تحويل السعر من نص إلى رقم
+    const price = parseInt(product.price.replace(/,/g, ''));
+    
+    try {
+        // الحصول على السلة من التخزين المحلي أو إنشاء سلة جديدة
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        
+        // التحقق مما إذا كان المنتج موجوداً في السلة
+        const existingItem = cart.find(item => item.id == productId);
+        
+        if (existingItem) {
+            // زيادة الكمية إذا كان المنتج موجوداً
+            existingItem.quantity += 1;
+        } else {
+            // إضافة المنتج إلى السلة
+            cart.push({
+                id: product.id,
+                name: product.name,
+                price: price,
+                image: product.image,
+                quantity: 1
+            });
+        }
+        
+        // حفظ السلة المحدثة في التخزين المحلي
+        localStorage.setItem('cart', JSON.stringify(cart));
+        
+        // تحديث عداد السلة
+        updateCartCount();
+        
+        // تحديث العداد في جميع الصفحات المفتوحة
+        const updateEvent = new Event('cartUpdated');
+        window.dispatchEvent(updateEvent);
+        
+    } catch (error) {
+        console.error('خطأ في إضافة المنتج إلى السلة:', error);
+        alert('حدث خطأ أثناء إضافة المنتج إلى السلة. يرجى المحاولة مرة أخرى.');
+    }
+    
+    return false;
+}
+
+// تحديث عداد السلة
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const count = cart.reduce((total, item) => total + item.quantity, 0);
+    document.querySelectorAll('.cart-count').forEach(element => {
+        element.textContent = count;
+    });
+}
+
 // دالة لعرض المنتجات
 function displayProducts(category = 'all') {
     const productsContainer = document.getElementById('productsContainer');
@@ -99,6 +161,9 @@ function displayProducts(category = 'all') {
             <div class="product-details">
                 <h4 class="product-name">${product.name}</h4>
                 <p class="product-price">${product.price} د.ع</p>
+                <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${product.id}, event); return false;">
+                    <i class="fas fa-shopping-cart"></i> زيده كرن بو سلكى  
+                </button>
             </div>
         </div>
     `).join('');
@@ -222,24 +287,27 @@ function setupProductZoom() {
 
 // تهيئة الأحداث
 function init() {
-    // عرض جميع المنتجات عند تحميل الصفحة
     displayProducts();
     
-    // إضافة مستمعي الأحداث لأزرار التصنيفات
+    // إعداد أحداث الأزرار
     const categoryButtons = document.querySelectorAll('.category-btn');
     categoryButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // إزالة الصنف النشط من جميع الأزرار
-            categoryButtons.forEach(btn => btn.classList.remove('active'));
-            
-            // إضافة الصنف النشط للزر المحدد
-            button.classList.add('active');
-            
-            // عرض المنتجات حسب الفئة المحددة
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
             const category = button.getAttribute('data-category');
-            displayProducts(category);
+            filterProducts(category);
+            
+            // تحديث الزر النشط
+            categoryButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
         });
     });
+    
+    // تحديث عداد السلة
+    updateCartCount();
+    
+    // تحديث عداد السلة عند تحميل الصفحة
+    updateCartCount();
 }
 
 // دالة لتصفية المنتجات حسب الفئة
